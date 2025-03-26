@@ -1,0 +1,71 @@
+#include <iostream>
+#include <string>
+
+class Package {
+private:
+    std::string content;
+    double weight;
+
+    Package(const std::string& content, double weight) 
+        : content(content), weight(weight) {}
+
+public:
+    friend class Truck;
+
+    friend std::ostream& operator<<(std::ostream& os, const Package& pkg);
+
+    std::string getContent() const { return content; }
+    double getWeight() const { return weight; }
+};
+
+class Truck {
+private:
+    std::string model;
+    Package* package;
+
+public:
+    Truck(const std::string& model) : model(model), package(nullptr) {}
+
+    void loadPackage(const std::string& content, double weight) {
+        if (package) {
+            std::cout << "Грузовик уже загружен!\n";
+            return;
+        }
+        package = new Package(content, weight);
+    }
+
+    void unloadPackage() {
+        delete package;
+        package = nullptr;
+    }
+
+    void printInfo() const {
+        std::cout << "Грузовик: " << model << "\n";
+        if (package) {
+            std::cout << "Груз: " << *package << "\n";
+        } else {
+            std::cout << "Грузовик пуст\n";
+        }
+    }
+
+    ~Truck() {
+        delete package;
+    }
+};
+
+std::ostream& operator<<(std::ostream& os, const Package& pkg) {
+    os << "[" << pkg.content << ", вес: " << pkg.weight << " кг]";
+    return os;
+}
+
+int main() {
+    Truck truck("Volvo FH16");
+    
+    truck.loadPackage("Бытовая техника", 1500.5);
+    truck.printInfo();
+    
+    truck.unloadPackage();
+    truck.printInfo();
+    
+    return 0;
+}
