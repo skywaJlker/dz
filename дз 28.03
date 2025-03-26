@@ -1,0 +1,55 @@
+#include <iostream>
+#include <utility>
+
+class Engine {
+    std::string type;
+    double power;
+public:
+    Engine(std::string t, double p) : type(std::move(t)), power(p) {}
+    Engine(Engine&& e) noexcept : type(std::move(e.type)), power(e.power) {}
+    Engine& operator=(Engine&& e) noexcept {
+        type = std::move(e.type);
+        power = e.power;
+        return *this;
+    }
+    void print() const { std::cout << type << " engine, " << power << " hp\n"; }
+};
+
+class Car {
+    std::string brand;
+    Engine engine;
+    int* serial;
+public:
+    Car(std::string b, Engine e, int sn) 
+        : brand(std::move(b)), engine(std::move(e)), serial(new int(sn)) {}
+    
+    Car(Car&& c) noexcept 
+        : brand(std::move(c.brand)), engine(std::move(c.engine)), serial(c.serial) {
+        c.serial = nullptr;
+    }
+    
+    Car& operator=(Car&& c) noexcept {
+        brand = std::move(c.brand);
+        engine = std::move(c.engine);
+        delete serial;
+        serial = c.serial;
+        c.serial = nullptr;
+        return *this;
+    }
+    
+    ~Car() { delete serial; }
+    
+    void print() const {
+        std::cout << brand << " ";
+        engine.print();
+        if (serial) std::cout << "SN: " << *serial << "\n";
+    }
+};
+
+int main() {
+    Car car1("Toyota", Engine("V6", 300), 12345);
+    Car car2 = std::move(car1);
+    
+    car1.print(); // Пустой
+    car2.print(); // С данными
+}
